@@ -70,7 +70,7 @@ public class TicketService {
         Route route = routeRepo.findByRouteCode(flight.getRouteCode()).get();
 
         return TicketResponse.builder()
-                .price(flight.getPrice())
+                .price(purchasedTicket.getPrice())
                 .ticketId(purchasedTicket.getId())
                 .createdDate(purchasedTicket.getCreatedDate())
                 .name(purchasedTicket.getName())
