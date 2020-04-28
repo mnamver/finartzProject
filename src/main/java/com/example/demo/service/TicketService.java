@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -25,6 +27,7 @@ public class TicketService {
 
     private static final String TICKET_NOT_FOUND = "Bilet Bulunamadı.";
     private static final String FLIGHT_NOT_FOUND = "Uçuş Bulunamadı.";
+    private static final String TICKET_SOLD_OUT= "Bilet Tükenmiştir.";
 
     @Transactional
     public void purchaseTicket(PurchasableTicketReq purchasableTicketReq) {
@@ -32,6 +35,10 @@ public class TicketService {
             throw new ValidationException(FLIGHT_NOT_FOUND);
         }
         Flight flight = flightRepo.findById(purchasableTicketReq.getFlightId()).get();
+
+        if(flight.getAvailableSeat() == 0){
+            throw new ValidationException(TICKET_SOLD_OUT);
+        }
 
         PurchasedTicket purchasedTicket = PurchasedTicket.builder()
                 .name(purchasableTicketReq.getName())
@@ -42,7 +49,9 @@ public class TicketService {
                 .tckn(purchasableTicketReq.getTckn()).build();
 
         purchasedTicketRepo.save(purchasedTicket);
-        flightRepo.updateAvailableSeat(purchasableTicketReq.getFlightId());
+        int availableSeat = flight.getAvailableSeat() - 1 ;
+        BigDecimal price = calculatePrice(availableSeat, flight.getTotalSeat(), flight.getPrice());
+        flightRepo.updateAvailableSeat(purchasableTicketReq.getFlightId(), price);
     }
 
     public void removeTicketId(long ticketId) {
@@ -68,6 +77,35 @@ public class TicketService {
                 .surname(purchasedTicket.getSurname())
                 .tckn(purchasedTicket.getTckn())
                 .route(route).build();
+    }
+
+
+    public BigDecimal calculatePrice(int availableSeat, int totalSeat, BigDecimal price){
+        int purchasedSeat = totalSeat - availableSeat;
+
+        BigDecimal newPrice = price.add(price.multiply(new BigDecimal(0.1)));
+
+        if(purchasedSeat >= totalSeat * 0.1 && purchasedSeat < totalSeat * 0.2){
+            return newPrice;
+        }else if(purchasedSeat >= totalSeat * 0.2 && purchasedSeat < totalSeat * 0.3){
+            return newPrice;
+        }else if(purchasedSeat >= totalSeat * 0.3 && purchasedSeat < totalSeat * 0.4){
+            return newPrice;
+        }else if(purchasedSeat >= totalSeat * 0.4 && purchasedSeat < totalSeat * 0.5){
+            return newPrice;
+        }else if(purchasedSeat >= totalSeat * 0.5 && purchasedSeat < totalSeat * 0.6){
+            return newPrice;
+        }else if(purchasedSeat >= totalSeat * 0.6 && purchasedSeat < totalSeat * 0.7){
+            return newPrice;
+        }else if(purchasedSeat >= totalSeat * 0.7 && purchasedSeat < totalSeat * 0.8){
+            return newPrice;
+        }else if(purchasedSeat >= totalSeat * 0.8 && purchasedSeat < totalSeat * 0.9){
+            return newPrice;
+        }else if(purchasedSeat >= totalSeat * 0.9){
+            return newPrice;
+        }else{
+            return price ;
+        }
     }
 
 

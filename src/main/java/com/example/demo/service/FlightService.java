@@ -32,39 +32,15 @@ public class FlightService {
         Flight flight = flightRepo.findById(flightId).get();
         Route route = routeRepo.findByRouteCode(flight.getRouteCode()).get();
 
-
-        BigDecimal price = calculatePrice(flight.getAvailableSeat(), flight.getTotalSeat(), flight.getPrice());
-
         FlightResponse flightResponse = FlightResponse.builder()
                 .route(route)
                 .flightCode(flight.getFlightCode())
-                .price(price)
+                .price(flight.getPrice())
                 .build();
 
         return flightResponse;
     }
 
-    public BigDecimal calculatePrice(int availableSeat, int totalSeat, BigDecimal price){
-        int purchasedSeat = totalSeat - availableSeat;
-        if(purchasedSeat < totalSeat * 0.1 ){
-            return price;
-        }else if(purchasedSeat < totalSeat * 0.2){
-            price = price.add(price.multiply(new BigDecimal(0.1))) ;
-            return price ;
-        }else if(purchasedSeat < totalSeat * 0.3){
-            price = price.add(price.multiply(new BigDecimal(0.2))) ;
-            return price ;
-        }else if(purchasedSeat < totalSeat * 0.4){
-            price = price.add(price.multiply(new BigDecimal(0.3))) ;
-            return price ;
-        }else if(purchasedSeat < totalSeat * 0.5){
-            price = price.add(price.multiply(new BigDecimal(0.4))) ;
-            return price ;
-        }else{
-            price = price.add(price.multiply(new BigDecimal(0.5))) ;
-            return price ;
-        }
-    }
 
     public void createFlight(FlightRequest flightRequest) {
         Flight flight = Flight.builder()
